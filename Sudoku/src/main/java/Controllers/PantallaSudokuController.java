@@ -6,9 +6,7 @@ import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.util.Duration;
 
@@ -69,7 +67,7 @@ public class PantallaSudokuController {
     @FXML
     void startGame(ActionEvent event) {
         juego.iniciarJuego();
-        renderizarTablero();
+        alert("INICIALIZACION", "se esta iniciando un nuevo juego ");
 
     }
 
@@ -182,6 +180,28 @@ public class PantallaSudokuController {
         relog.setCycleCount(Timeline.INDEFINITE);
         relog.play();
 
+
+    }
+    void alert (String tipo_alerta, String imformacion){
+
+        Alert alert = new Alert(Alert.AlertType.NONE);
+
+        ButtonType ok = new ButtonType("Aceptar");
+        ButtonType cancelar = new ButtonType("Cancelar");
+
+        alert.setTitle(tipo_alerta);
+        alert.setHeaderText(null);
+        alert.setContentText(imformacion);
+
+        alert.getButtonTypes().setAll(ok, cancelar);
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ok) {
+                renderizarTablero();
+            }else{
+
+            }
+        });
 
     }
 
