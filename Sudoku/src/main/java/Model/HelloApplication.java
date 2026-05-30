@@ -12,7 +12,7 @@ public class HelloApplication extends Application {
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("/IGU/PanatllaSudoku.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 650, 700);
-        stage.setTitle("Hello!");
+        stage.setTitle("Sudoku");
         stage.setScene(scene);
         stage.show();
     }

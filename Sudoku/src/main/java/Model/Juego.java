@@ -7,34 +7,33 @@ public class Juego {
 
     private Generar generar = new Generar();
     private  Tablero tablero = new Tablero();
-    private Niveles niveles = new Niveles();
     private Validar validar = new Validar();
     private int errores = 0;
     private int pistas = 0;
     private boolean juegoTermino = false;
-    private int[][] tableroSolucion= new  int[9][9];
+    private int[][] tableroSolucion= new  int[6][6];
     private ArrayList<int[]> celdasVacias = new ArrayList<>();
     private Random random = new Random();
 
 
-    public void iniciarJuego(String dificultad){
+    public void iniciarJuego(){
         tablero = new Tablero();
         errores=0;
         pistas = 0;
         juegoTermino = false;
         celdasVacias.clear();
         generar.generarSudoku(tablero,0);
-        for(int i=0; i<9; i++){
-            for(int j=0; j<9; j++){
+        for(int i=0; i<6; i++){
+            for(int j=0; j<6; j++){
                 tableroSolucion[i][j]=tablero.getCelda(i,j).getValor();
 
             }
 
         }
 
-        generar.eliminarCeldasSegunNivel(tablero,niveles,dificultad);
-        for(int i=0; i<9; i++){
-            for(int j=0; j<9; j++){
+        generar.eliminarCeldasPorSubcuadro(tablero);
+        for(int i=0; i<6; i++){
+            for(int j=0; j<6; j++){
                 if(tablero.getCelda(i,j).getValor() ==0){
 
                     celdasVacias.add(new int[]{i,j});
@@ -67,8 +66,8 @@ public class Juego {
     }
 
     public boolean verificarJugadorGano(){
-        for(int i=0; i<9; i++){
-            for(int j=0; j<9; j++){
+        for(int i=0; i<6; i++){
+            for(int j=0; j<6; j++){
                 if(tablero.getCelda(i,j).getValor() == 0){
                     return false;
                 }

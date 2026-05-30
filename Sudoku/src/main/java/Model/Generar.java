@@ -4,35 +4,34 @@ import java.util.Random;
 
 public class Generar {
 
-    private int[] numerosSudoku = {1,2,3,4,5,6,7,8,9};
+    private int[] numerosSudoku = {1, 2, 3, 4, 5, 6};
     private Validar validar = new Validar();
     private Random random = new Random();
 
-    public boolean generarSudoku( Tablero tablero, int posicion ){
+    public boolean generarSudoku(Tablero tablero, int posicion) {
 
-        if( posicion== 81){
+        if (posicion == 36) {
             return true;
         }
-        int fila =posicion/9;
-        int columna = posicion%9;
+        int fila = posicion / 6;
+        int columna = posicion % 6;
 
 
-        for(int i = 0; i < numerosSudoku.length; i++){
-            int aleatorio = random.nextInt(9);
+        for (int i = 0; i < numerosSudoku.length; i++) {
+            int aleatorio = random.nextInt(6);
             int temp = numerosSudoku[i];
             numerosSudoku[i] = numerosSudoku[aleatorio];
             numerosSudoku[aleatorio] = temp;
         }
 
-        for(int i = 0; i <numerosSudoku.length; i++) {
+        for (int i = 0; i < numerosSudoku.length; i++) {
             Celda celdaTemporal = new Celda();
             celdaTemporal.setValor(numerosSudoku[i]);
-            if(validar.validarFila(tablero,celdaTemporal,fila) && validar.validarColumna(tablero, celdaTemporal, columna) && validar.validarSubcuadro(fila, columna, tablero, celdaTemporal)){
-                tablero.getCelda(fila,columna).setValor(numerosSudoku[i]);
-                if(generarSudoku(tablero, posicion+1)){
+            if (validar.validarFila(tablero, celdaTemporal, fila) && validar.validarColumna(tablero, celdaTemporal, columna) && validar.validarSubcuadro(fila, columna, tablero, celdaTemporal)) {
+                tablero.getCelda(fila, columna).setValor(numerosSudoku[i]);
+                if (generarSudoku(tablero, posicion + 1)) {
                     return true;
-                }
-                else{
+                } else {
                     tablero.getCelda(fila, columna).setValor(0);
                 }
 
@@ -43,31 +42,33 @@ public class Generar {
         return false;
     }
 
-    public void eliminarCeldasSegunNivel(Tablero tablero, Niveles nivel, String dificultad){
+    public void eliminarCeldasPorSubcuadro(Tablero tablero) {
 
-        int celdasAEliminar=0;
-        if(dificultad.equalsIgnoreCase("facil")){
-             celdasAEliminar = nivel.nivelFacil();
-        }
-        if(dificultad.equalsIgnoreCase("medio")){
-             celdasAEliminar = nivel.nivelMedio();
+        int filasBloque = 2;
+        int columnasBloque = 3;
 
-        }
-        if(dificultad.equalsIgnoreCase("dificil")){
-             celdasAEliminar = nivel.nivelDificil();
+        int totalFilas = 6;
+        int totalColumnas = 6;
 
-        }
-        int celdasEliminadas=0;
-        while (celdasEliminadas<celdasAEliminar){
-            int fila = random.nextInt(9);
-            int columna = random.nextInt(9);
+        for (int inicioFila = 0; inicioFila < totalFilas; inicioFila += filasBloque) {
+            for (int inicioCol = 0; inicioCol < totalColumnas; inicioCol += columnasBloque) {
 
-            if(tablero.getCelda(fila,columna).getValor() != 0 ){
-                tablero.getCelda(fila,columna).setValor(0);
-                tablero.getCelda(fila,columna).setEditable(true);
-                celdasEliminadas++;
+                int eliminadas = 0;
+
+                while (eliminadas < 4) {
+
+                    int fila = inicioFila + random.nextInt(filasBloque);
+                    int columna = inicioCol + random.nextInt(columnasBloque);
+
+                    Celda celda = tablero.getCelda(fila, columna);
+
+                    if (celda.getValor() != 0) {
+                        celda.setValor(0);
+                        celda.setEditable(true);
+                        eliminadas++;
+                    }
+                }
             }
         }
     }
-
 }

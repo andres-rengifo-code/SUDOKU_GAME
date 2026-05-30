@@ -47,7 +47,7 @@ public class PantallaSudokuController {
 
 
     }
-
+    /*
     @FXML
     void startGameEasyLevel(ActionEvent event) {
         juego.iniciarJuego("facil");
@@ -64,9 +64,11 @@ public class PantallaSudokuController {
 
     }
 
+     */
+
     @FXML
-    void startGameMediumLevel(ActionEvent event) {
-        juego.iniciarJuego("medio");
+    void startGame(ActionEvent event) {
+        juego.iniciarJuego();
         renderizarTablero();
 
     }
@@ -81,11 +83,11 @@ public class PantallaSudokuController {
         if(relog != null) relog.stop();
 
 
-        for(int i=0; i<9; i++){
-            for(int j=0; j<9; j++){
+        for(int i=0; i<6; i++){
+            for(int j=0; j<6; j++){
 
                 TextField textField = new TextField();
-                textField.setPrefSize(40,40);
+                textField.setPrefSize(60,60);
                 textField.setAlignment(Pos.CENTER);
                 textFields[i][j]=textField;
 
@@ -106,7 +108,7 @@ public class PantallaSudokuController {
 
                 textField.setTextFormatter(new TextFormatter<>(change -> {
                     String newText = change.getControlNewText();
-                    if(newText.matches("[1-9]?")){
+                    if(newText.matches("[1-6]?")){
                         return change;
                     }
                     return null;
@@ -146,8 +148,8 @@ public class PantallaSudokuController {
                             if(perdio){
                                 System.out.println("JUGADOR PERDIO");
                                 relog.stop();
-                                for(int f=0; f<9; f++){
-                                    for(int c=0; c<9; c++){
+                                for(int f=0; f<6; f++){
+                                    for(int c=0; c<6; c++){
 
                                         if(!textFields[f][c].getStyle().contains("#90EE90") && !textFields[f][c].getStyle().contains("ff0000") && !textFields[f][c].getStyle().contains("#c7c7c7")){
                                             textFields[f][c].setEditable(false);
@@ -177,7 +179,7 @@ public class PantallaSudokuController {
             tiempoenjuego.setText(String.format("%02d:%02d",minutos,segundos));
         }));
 
-        relog.setCycleCount(Timeline.INDEFINITE); // 👈 2
+        relog.setCycleCount(Timeline.INDEFINITE);
         relog.play();
 
 

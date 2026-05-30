@@ -6,12 +6,13 @@ public class Celda {
     private boolean editable;
 
 
-    //Constructores
+    //Constructores basio : genera celdas con valor de cero y con estado editable
     public Celda() {
         valor=0;
         editable=true;
     }
 
+    //Constructor
     public Celda(boolean editable, int valor) {
         this.editable = editable;
         this.valor = valor;
@@ -37,9 +38,9 @@ public class Celda {
         configurarCelda();
     }
 
-    // Configura la celda de tal manera que solo se pueden ingresar numeros del 1 al 9
+    // Configura la celda de tal manera que solo se pueden ingresar numeros del 1 al 6
     private void configurarCelda(){
-        if (valor<1 || valor>9){
+        if (valor<1 || valor>6){
             valor=0;
         }
     }
