@@ -27,12 +27,17 @@ public class PantallaSudokuController {
     private Label tiempoenjuego;
 
     private Juego juego = new Juego();
-    private TextField[][] textFields = new TextField[9][9];
+    private TextField[][] textFields = new TextField[6][6];
     private int minutos= 0;
     private int segundos= 0;
     private Timeline relog;
 
-
+    /**
+     * Solicita una pista al modelo y actualiza la interfaz.
+     *
+     * La celda seleccionada se rellena con el valor correcto,
+     * se colorea de verde y deja de ser editable.
+     */
 
     @FXML
     void generarPista(ActionEvent event) {
@@ -45,25 +50,12 @@ public class PantallaSudokuController {
 
 
     }
-    /*
-    @FXML
-    void startGameEasyLevel(ActionEvent event) {
-        juego.iniciarJuego("facil");
-        renderizarTablero();
-
-
-    }
-
-    @FXML
-    void startGameHardLevel(ActionEvent event) {
-        juego.iniciarJuego("dificil");
-        renderizarTablero();
-
-
-    }
-
+    /**
+     * Inicia una nueva partida de Sudoku.
+     *
+     * Genera un nuevo tablero y solicita confirmación
+     * para renderizarlo en pantalla.
      */
-
     @FXML
     void startGame(ActionEvent event) {
         juego.iniciarJuego();
@@ -71,6 +63,18 @@ public class PantallaSudokuController {
 
     }
 
+    /**
+     * Construye visualmente el tablero Sudoku.
+     *
+     * Recorre todas las celdas del modelo y crea los
+     * TextField correspondientes en la interfaz.
+     *
+     * También configura:
+     * - Restricción de entrada (1-6).
+     * - Eventos del teclado.
+     * - Validación de jugadas.
+     * - Detección de victoria y derrota.
+     */
     void renderizarTablero(){
 
         matrizSudoku.getChildren().clear();
@@ -84,9 +88,11 @@ public class PantallaSudokuController {
         for(int i=0; i<6; i++){
             for(int j=0; j<6; j++){
 
-                TextField textField = new TextField();
+                TextField textField = new TextField(); // Crea el componente visual que representará una celda del Sudoku.
                 textField.setPrefSize(60,60);
                 textField.setAlignment(Pos.CENTER);
+                // Guarda una referencia al TextField para poder acceder
+                // posteriormente desde otros métodos del controlador.
                 textFields[i][j]=textField;
 
 
@@ -98,12 +104,14 @@ public class PantallaSudokuController {
                     textField.setStyle("-fx-background-color: #c7c7c7;");
                 }
 
-
+                // Agrega la celda a la posición correspondiente del GridPane.
                 matrizSudoku.add(textField,j,i);
 
                 final int fila = i;
                 final int columna = j;
 
+                // Permite únicamente números del 1 al 6.
+                // También permite dejar la celda vacía.
                 textField.setTextFormatter(new TextFormatter<>(change -> {
                     String newText = change.getControlNewText();
                     if(newText.matches("[1-6]?")){
@@ -112,7 +120,8 @@ public class PantallaSudokuController {
                     return null;
                 }));
 
-
+                // Se ejecuta cada vez que el usuario libera una tecla.
+                // Valida la jugada ingresada y actualiza el estado del juego.
                 textField.setOnKeyReleased(event -> {
                     if(!textField.isEditable()){
                         return;
@@ -122,29 +131,25 @@ public class PantallaSudokuController {
 
                         return;
                     }
-                    /*
-                    if(!juego.getTablero().getCelda(fila, columna).isEditable()){
-                        return;
-                    }
-
-                     */
 
                     if(!textField.getText().isEmpty()){
                         int valor = Integer.parseInt(textField.getText());
                         if(juego.getionarAccion(fila, columna, valor)){
                             textField.setStyle("-fx-background-color: #90EE90;");
                             textField.setEditable(false);
-                            boolean gano = juego.verificarJugadorGano();
+                            boolean gano = juego.verificarJugadorGano();// Comprueba si todas las celdas del tablero han sido completadas
                             if(gano){
-                                System.out.println("Jugador gano");
+                                alert("Victoria", "¡Has completado el Sudoku!");
                                 relog.stop();
                             }
                         } else {
                             textField.setStyle("-fx-background-color: #ff0000;");
+                            // Incrementa el contador de errores y verifica
+                            // si el jugador alcanzó el límite permitido.
                             boolean perdio =juego.contadorErrores();
                             erroresCometidos.setText(String.valueOf(juego.getErrores()));
                             if(perdio){
-                                System.out.println("JUGADOR PERDIO");
+                                alert("Derrota", "Has alcanzado el límite de errores.");
                                 relog.stop();
                                 for(int f=0; f<6; f++){
                                     for(int c=0; c<6; c++){
@@ -166,15 +171,21 @@ public class PantallaSudokuController {
         }
         cronometro();
     }
-
+    /**
+     * Inicia el cronómetro de la partida.
+     *
+     * Actualiza el tiempo mostrado cada segundo.
+     */
     void cronometro(){
          relog = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
-            segundos++;
+            segundos++;// Incrementa el contador de segundos.
+             // Cuando se completan 60 segundos,
+            // se incrementa un minuto y se reinician los segundos.
             if (segundos == 60) {
                 minutos++;
                 segundos = 0;
             }
-            tiempoenjuego.setText(String.format("%02d:%02d",minutos,segundos));
+            tiempoenjuego.setText(String.format("%02d:%02d",minutos,segundos));// Actualiza el tiempo mostrado en la interfaz.
         }));
 
         relog.setCycleCount(Timeline.INDEFINITE);
@@ -182,6 +193,15 @@ public class PantallaSudokuController {
 
 
     }
+    /**
+     * Muestra una ventana emergente con opciones
+     * para aceptar o cancelar una acción.
+     *
+     * Si el usuario acepta, se renderiza un nuevo tablero.
+     *
+     * @param tipo_alerta Título de la ventana.
+     * @param imformacion Mensaje mostrado al usuario.
+     */
     void alert (String tipo_alerta, String imformacion){
 
         Alert alert = new Alert(Alert.AlertType.NONE);
