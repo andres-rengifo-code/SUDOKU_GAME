@@ -50,7 +50,7 @@
                      </padding>
                      <children>
                         <Label text="Pistas" VBox.vgrow="ALWAYS" />
-                        <Label fx:id="pistasSobrantes" text="3" />
+                        <Label fx:id="pistasSobrantes" text="" />
                      </children>
                   </VBox>
                </children>
@@ -88,7 +88,7 @@
             </HBox>
             <VBox alignment="CENTER" maxHeight="400.0" maxWidth="400.0" prefHeight="400.0" prefWidth="400.0" spacing="12.0" VBox.vgrow="ALWAYS">
                <children>
-                  <GridPane fx:id="matrizSudoku" alignment="CENTER" hgap="2.0" style="-fx-grid-lines-visible: true;" vgap="2.0" VBox.vgrow="ALWAYS">
+                  <GridPane fx:id="matrizSudoku" alignment="CENTER" style="-fx-grid-lines-visible: true;" hgap="2.0" vgap="2.0" VBox.vgrow="ALWAYS">
                     <columnConstraints>
                       <ColumnConstraints hgrow="SOMETIMES" maxWidth="60.0" minWidth="60.0" percentWidth="0.0" prefWidth="60.0" />
                       <ColumnConstraints hgrow="SOMETIMES" maxWidth="60.0" minWidth="60.0" percentWidth="0.0" prefWidth="60.0" />

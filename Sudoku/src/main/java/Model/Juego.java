@@ -3,111 +3,106 @@ package Model;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Juego {
+/**
+ * Clase principal del modelo que gestiona el estado de una partida de Sudoku.
+ *
+ * Implementa {@link IJuego} para desacoplarse del controlador
+ * mediante la interfaz, siguiendo el patrón Adapter junto con {@link JuegoAdapter}.
+ */
+public class Juego implements IJuego {
 
-    /**
-     * Generador encargado de crear tableros Sudoku válidos.
-     */
+    /** Generador encargado de crear tableros Sudoku válidos. */
     private Generar generar = new Generar();
-    /**
-     * Tablero actual del juego.
-     */
-    private  Tablero tablero = new Tablero();
-    /**
-     * Objeto encargado de validar filas, columnas y subcuadros.
-     */
+
+    /** Tablero actual del juego. */
+    private Tablero tablero = new Tablero();
+
+    /** Objeto encargado de validar filas, columnas y subcuadros. */
     private Validar validar = new Validar();
-    /**
-     * Cantidad de errores cometidos por el jugador.
-     */
+
+    /** Cantidad de errores cometidos por el jugador. */
     private int errores = 0;
-    /**
-     * Cantidad de pistas utilizadas.
-     */
+
+    /** Cantidad de pistas utilizadas. */
     private int pistas = 0;
-    /**
-     * Indica si la partida ha terminado.
-     */
+
+    /** Indica si la partida ha terminado. */
     private boolean juegoTermino = false;
-    /**
-     * Almacena la solución completa del Sudoku generado.
-     */
-    private int[][] tableroSolucion= new  int[6][6];
+
+    /** Almacena la solución completa del Sudoku generado. */
+    private int[][] tableroSolucion = new int[6][6];
+
     /**
      * Lista de coordenadas de las celdas vacías.
-     * Cada elemento almacena:
-     * [fila, columna]
+     * Cada elemento almacena: [fila, columna].
      */
     private ArrayList<int[]> celdasVacias = new ArrayList<>();
-    /**
-     * Generador de números aleatorios.
-     */
+
+    /** Generador de números aleatorios. */
     private Random random = new Random();
 
+    // -----------------------------------------------------------------------
+    // IJuego – implementación
+    // -----------------------------------------------------------------------
+
     /**
-     * Inicializa una nueva partida.
+     * {@inheritDoc}
      *
      * Genera un Sudoku completo, guarda la solución,
      * elimina celdas para crear el reto y registra
      * las posiciones vacías.
      */
-    public void iniciarJuego(){
-        //Reinicia las variables
+    @Override
+    public void iniciarJuego() {
         tablero = new Tablero();
-        errores=0;
+        errores = 0;
         pistas = 0;
         juegoTermino = false;
         celdasVacias.clear();
 
-        generar.generarSudoku(tablero,0);//Genera unn tablero solucionado
-        for(int i=0; i<6; i++){
-            for(int j=0; j<6; j++){
-                tableroSolucion[i][j]=tablero.getCelda(i,j).getValor(); // le da a cada una de las celdas de la matriz solucion un valor guardando el tablero solucionado
+        generar.generarSudoku(tablero, 0);
 
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
+                tableroSolucion[i][j] = tablero.getCelda(i, j).getValor();
             }
-
         }
 
-        generar.eliminarCeldasPorSubcuadro(tablero);//elimina las celdas dejando solo 2 visibles por cada subcuadro
-        for(int i=0; i<6; i++){
-            for(int j=0; j<6; j++){
-                if(tablero.getCelda(i,j).getValor() ==0){
+        generar.eliminarCeldasPorSubcuadro(tablero);
 
-                    celdasVacias.add(new int[]{i,j});// Gurda las pociciones donde la celda esta vacia
-
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
+                if (tablero.getCelda(i, j).getValor() == 0) {
+                    celdasVacias.add(new int[]{i, j});
                 }
-
             }
-
         }
-
-
     }
+
     /**
-     * Intenta colocar un valor en una celda.
+     * {@inheritDoc}
      *
      * Verifica que la celda sea editable y que el valor
-     * cumpla las reglas del Sudoku.
-     *
-     * @param fila Fila donde se insertará el valor.
-     * @param columna Columna donde se insertará el valor.
-     * @param valor Número a insertar.
-     * @return true si el movimiento es válido.
+     * cumpla las reglas del Sudoku antes de insertarlo.
      */
-    public boolean getionarAccion(int fila, int columna, int valor ){
+    @Override
+    public boolean getionarAccion(int fila, int columna, int valor) {
+        if (!tablero.getCelda(fila, columna).isEditable()) {
+            return false;
+        }
 
-        if(!tablero.getCelda(fila,columna).isEditable()){return false;}// verifica que la celda sea editable para realizar acciones
-
-        // Se crea una celda temporal que almacena el valor ingresado por el usuario.
-        // Esta celda se utiliza para realizar las validaciones antes de modificar
-        // la celda real del tablero.
         Celda celdaTemporal = new Celda();
         celdaTemporal.setValor(valor);
 
-        //verifica que si lo que el usuaruo escribio cumple con las reglas del juego
-        if(validar.validarFila(tablero,celdaTemporal,fila) && validar.validarColumna(tablero, celdaTemporal, columna) && validar.validarSubcuadro(fila, columna, tablero, celdaTemporal)){
-            tablero.getCelda(fila,columna).setValor(valor);
-            tablero.getCelda(fila,columna).setEditable(false);
+        if (validar.validarFila(tablero, celdaTemporal, fila)
+                && validar.validarColumna(tablero, celdaTemporal, columna)
+                && validar.validarSubcuadro(fila, columna, tablero, celdaTemporal)) {
+
+            tablero.getCelda(fila, columna).setValor(valor);
+            tablero.getCelda(fila, columna).setEditable(false);
+
+            // Elimina la celda resuelta de la lista de vacías
+            celdasVacias.removeIf(c -> c[0] == fila && c[1] == columna);
             return true;
         }
 
@@ -115,33 +110,29 @@ public class Juego {
     }
 
     /**
-     * Verifica si el jugador completó el tablero.
-     *
-     * @return true si no quedan celdas vacías.
+     * {@inheritDoc}
      */
-    public boolean verificarJugadorGano(){
-        for(int i=0; i<6; i++){
-            for(int j=0; j<6; j++){
-                if(tablero.getCelda(i,j).getValor() == 0){
+    @Override
+    public boolean verificarJugadorGano() {
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
+                if (tablero.getCelda(i, j).getValor() == 0) {
                     return false;
                 }
             }
-
         }
         return true;
     }
 
     /**
-     * Incrementa el contador de errores.
+     * {@inheritDoc}
      *
-     * Si el jugador alcanza tres errores,
-     * la partida termina.
-     *
-     * @return true si el jugador perdió.
+     * Tres errores equivalen a derrota.
      */
-    public boolean contadorErrores(){
+    @Override
+    public boolean contadorErrores() {
         errores++;
-        if(errores==3){
+        if (errores == 3) {
             juegoTermino = true;
             return true;
         }
@@ -149,59 +140,62 @@ public class Juego {
     }
 
     /**
-     * Proporciona una pista al jugador.
+     * {@inheritDoc}
      *
-     * Selecciona aleatoriamente una celda vacía
-     * y coloca el valor correcto correspondiente.
-     *
-     * Restricciones:
-     * - Máximo 3 pistas.
-     * - El juego no debe haber terminado.
-     *
-     * @return Coordenadas de la pista entregada.
+     * La pista NO se entrega si solo queda UNA celda vacía
+     * (el jugador debe resolver la última por sí mismo),
+     * o si el juego ya terminó.
+     * No hay límite de pistas.
      */
-    public int[] darPista(){
-        if (pistas<3 && !celdasVacias.isEmpty() && !juegoTermino) {
-            // Selecciona una posición aleatoria de la lista
-            // de celdas vacías.
-            int indice = random.nextInt(celdasVacias.size());
-            // Obtiene las coordenadas de la celda seleccionada.
-            int[] cordebada = celdasVacias.get(indice);
-            // Extrae fila y columna del arreglo.
-            int fila = cordebada[0];
-            int columna = cordebada[1];
-            // Inserta en el tablero el valor correcto
-            // almacenado en la solución del Sudoku.
-            tablero.getCelda(fila, columna).setValor(tableroSolucion[fila][columna]);
-            // Elimina la celda de la lista para evitar
-            // que vuelva a ser seleccionada como pista.
-            celdasVacias.remove(indice);
-            pistas++;
-            return cordebada;
-
+    @Override
+    public int[] darPista() {
+        // Bloquea solo cuando queda exactamente 1 celda o el juego terminó
+        if (celdasVacias.isEmpty() || celdasVacias.size() <= 1 || juegoTermino) {
+            return null;
         }
-        return null;
 
+        int indice = random.nextInt(celdasVacias.size());
+        int[] coordenada = celdasVacias.get(indice);
+        int fila    = coordenada[0];
+        int columna = coordenada[1];
 
+        tablero.getCelda(fila, columna).setValor(tableroSolucion[fila][columna]);
+        tablero.getCelda(fila, columna).setEditable(false);
+        celdasVacias.remove(indice);
+        pistas++;
+
+        return coordenada;
     }
 
+    // -----------------------------------------------------------------------
+    // Getters
+    // -----------------------------------------------------------------------
 
-    /**
-     * Obtiene el tablero actual.
-     */
+    /** {@inheritDoc} */
+    @Override
     public Tablero getTablero() {
         return tablero;
     }
 
-    /**
-     * Obtiene la cantidad de errores.
-     */
+    /** {@inheritDoc} */
+    @Override
     public int getErrores() {
         return errores;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean isJuegoTermino() {
+        return juegoTermino;
+    }
+
     /**
-     * Indica si la partida ha terminado.
+     * {@inheritDoc}
+     *
+     * @return Cantidad de pistas usadas hasta el momento.
      */
-    public boolean isJuegoTermino(){return juegoTermino;}
+    @Override
+    public int getPistasRestantes() {
+        return pistas;
+    }
 }
