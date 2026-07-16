@@ -75,7 +75,7 @@ public class JuegoAdapter implements IJuego {
     @Override
     public int getErrores() {
         return juego.getErrores();
-    }
+   }
 
     /** {@inheritDoc} */
     @Override

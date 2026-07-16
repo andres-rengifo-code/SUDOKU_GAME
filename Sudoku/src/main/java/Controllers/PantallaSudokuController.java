@@ -29,6 +29,17 @@ public class PantallaSudokuController implements Controllers.ITableroRenderer {
 
     @FXML private Label    erroresCometidos;
     @FXML private GridPane matrizSudoku;
+
+    /** Referencias a los 6 GridPane internos definidos en el FXML. */
+    @FXML private GridPane bloque00;
+    @FXML private GridPane bloque01;
+    @FXML private GridPane bloque10;
+    @FXML private GridPane bloque11;
+    @FXML private GridPane bloque20;
+    @FXML private GridPane bloque21;
+
+    /** Arreglo para recorrer los bloques ordenadamente. */
+    private GridPane[][] bloques;
     @FXML private Label    pistasSobrantes;
     @FXML private Label    tiempoenjuego;
 
@@ -109,74 +120,86 @@ public class PantallaSudokuController implements Controllers.ITableroRenderer {
      */
     @Override
     public void renderizarTablero() {
-        matrizSudoku.getChildren().clear();
-        erroresCometidos.setText("0");
+        // NO limpiar matrizSudoku, solo limpiar los bloques internos
+        erroresCometidos.setText("");
         pistasSobrantes.setText("");
-        minutos  = 0;
+        minutos = 0;
         segundos = 0;
 
         if (relog != null) relog.stop();
 
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
+        // Inicializa el arreglo de bloques con los GridPane inyectados desde el FXML
+        bloques = new GridPane[][]{
+                {bloque00, bloque01},
+                {bloque10, bloque11},
+                {bloque20, bloque21}
+        };
 
-                TextField textField = new TextField();
-                textField.setPrefSize(60, 60);
-                textField.setAlignment(Pos.CENTER);
-                textFields[i][j] = textField;
+        // Recorrer todos los bloques y limpiar solo los TextField
+        for (int bloqueFilas = 0; bloqueFilas < 3; bloqueFilas++) {
+            for (int bloqueCol = 0; bloqueCol < 2; bloqueCol++) {
+                GridPane bloque = bloques[bloqueFilas][bloqueCol];
+                // Limpiar solo TextField, no todos los children
+                bloque.getChildren().removeIf(n -> n instanceof TextField);
 
-                if (juego.getTablero().getCelda(i, j).getValor() == 0) {
-                    textField.setText("");
-                } else {
-                    textField.setText(String.valueOf(juego.getTablero().getCelda(i, j).getValor()));
-                    textField.setEditable(false);
-                    textField.setStyle("-fx-background-color: #c7c7c7;");
-                }
+                int filaInicio = bloqueFilas * 2;
+                int colInicio = bloqueCol * 3;
 
-                matrizSudoku.add(textField, j, i);
+                for (int fi = 0; fi < 2; fi++) {
+                    for (int ci = 0; ci < 3; ci++) {
+                        final int fila = filaInicio + fi;
+                        final int columna = colInicio + ci;
 
-                final int fila    = i;
-                final int columna = j;
+                        TextField textField = new TextField();
+                        textField.setPrefSize(60, 60);
+                        textField.setAlignment(Pos.CENTER);
+                        textFields[fila][columna] = textField;
 
-                // Permite únicamente números del 1 al 6 (o campo vacío).
-                textField.setTextFormatter(new TextFormatter<>(change -> {
-                    String newText = change.getControlNewText();
-                    if (newText.matches("[1-6]?")) {
-                        return change;
-                    }
-                    return null;
-                }));
-
-                // Valida la jugada cada vez que el usuario suelta una tecla.
-                textField.setOnKeyReleased(e -> {
-                    if (!textField.isEditable() || juego.isJuegoTermino()) return;
-
-                    if (!textField.getText().isEmpty()) {
-                        int valor = Integer.parseInt(textField.getText());
-
-                        if (juego.getionarAccion(fila, columna, valor)) {
-                            textField.setStyle("-fx-background-color: #90EE90;");
-                            textField.setEditable(false);
-
-                            if (juego.verificarJugadorGano()) {
-                                alert("Victoria", "¡Has completado el Sudoku!");
-                                relog.stop();
-                            }
+                        if (juego.getTablero().getCelda(fila, columna).getValor() == 0) {
+                            textField.setText("");
                         } else {
-                            textField.setStyle("-fx-background-color: #ff0000;");
-
-                            erroresCometidos.setText(String.valueOf(juego.getErrores() + 1));
-                            boolean perdio = juego.contadorErrores();
-                            erroresCometidos.setText(String.valueOf(juego.getErrores()));
-
-                            if (perdio) {
-                                alert("Derrota", "Has alcanzado el límite de errores.");
-                                relog.stop();
-                                bloquearTableroAlPerder();
-                            }
+                            textField.setText(String.valueOf(
+                                    juego.getTablero().getCelda(fila, columna).getValor()));
+                            textField.setEditable(false);
+                            textField.setStyle("-fx-background-color: #c7c7c7;");
                         }
+
+                        bloque.add(textField, ci, fi);
+
+                        textField.setTextFormatter(new TextFormatter<>(change -> {
+                            String newText = change.getControlNewText();
+                            if (newText.matches("[1-6]?")) return change;
+                            return null;
+                        }));
+
+                        textField.setOnKeyReleased(e -> {
+                            if (!textField.isEditable() || juego.isJuegoTermino()) return;
+                            if (!textField.getText().isEmpty()) {
+                                int valor = Integer.parseInt(textField.getText());
+                                if (juego.getionarAccion(fila, columna, valor)) {
+                                    textField.setStyle("-fx-background-color: #90EE90;");
+                                    textField.setEditable(false);
+                                    if (juego.verificarJugadorGano()) {
+                                        alert("Victoria", "¡Has completado el Sudoku!");
+                                        relog.stop();
+                                    }
+                                } else {
+                                    textField.setStyle("-fx-background-color: #ff0000;");
+                                    /**
+                                     erroresCometidos.setText(String.valueOf(juego.getErrores() + 1));
+                                     boolean perdio = juego.contadorErrores();
+                                     erroresCometidos.setText(String.valueOf(juego.getErrores()));
+
+                                     if (perdio) {
+                                     alert("Derrota", "Has alcanzado el límite de errores.");
+                                     relog.stop();
+                                     bloquearTableroAlPerder();
+                                     }*/
+                                }
+                            }
+                        });
                     }
-                });
+                }
             }
         }
 
