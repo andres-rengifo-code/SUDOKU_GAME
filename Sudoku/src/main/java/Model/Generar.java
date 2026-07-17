@@ -4,35 +4,63 @@ import java.util.Random;
 
 public class Generar {
 
-    private int[] numerosSudoku = {1,2,3,4,5,6,7,8,9};
+    /**
+     * Arreglo con los números válidos del Sudoku 6x6.
+     * Se mezcla aleatoriamente para generar tableros distintos.
+     */
+    private int[] numerosSudoku = {1, 2, 3, 4, 5, 6};
+    /**
+     * Objeto encargado de validar filas, columnas y subcuadros.
+     */
     private Validar validar = new Validar();
+    /**
+     * Generador de números aleatorios.
+     */
     private Random random = new Random();
 
-    public boolean generarSudoku( Tablero tablero, int posicion ){
+    /**
+     * Genera un Sudoku completo utilizando backtracking.
+     *
+     * Recorre el tablero posición por posición intentando
+     * colocar números válidos. Si una combinación no funciona,
+     * retrocede y prueba otra alternativa.
+     *
+     * @param tablero Tablero sobre el cual se genera el Sudoku.
+     * @param posicion Posición actual del tablero (0-35).
+     * @return true si se logró generar un tablero válido.
+     */
+    public boolean generarSudoku(Tablero tablero, int posicion) {
 
-        if( posicion== 81){
+        //Si ya llené las 36 casillas del Sudoku 6x6, terminé
+        if (posicion == 36) {
             return true;
         }
-        int fila =posicion/9;
-        int columna = posicion%9;
 
+        // calcula la fila y la columna
+        int fila = posicion / 6;
+        int columna = posicion % 6;
 
-        for(int i = 0; i < numerosSudoku.length; i++){
-            int aleatorio = random.nextInt(9);
+        // mezcla numeros: ase que el arreglo {1, 2, 3, 4, 5, 6} se pueda mezclar de diferentes formas lo cual genera Sudokus diferentes
+        for (int i = 0; i < numerosSudoku.length; i++) {
+            int aleatorio = random.nextInt(6);
             int temp = numerosSudoku[i];
             numerosSudoku[i] = numerosSudoku[aleatorio];
             numerosSudoku[aleatorio] = temp;
         }
 
-        for(int i = 0; i <numerosSudoku.length; i++) {
-            Celda celdaTemporal = new Celda();
-            celdaTemporal.setValor(numerosSudoku[i]);
-            if(validar.validarFila(tablero,celdaTemporal,fila) && validar.validarColumna(tablero, celdaTemporal, columna) && validar.validarSubcuadro(fila, columna, tablero, celdaTemporal)){
-                tablero.getCelda(fila,columna).setValor(numerosSudoku[i]);
-                if(generarSudoku(tablero, posicion+1)){
+        //prueba cada numero mezclado
+        for (int i = 0; i < numerosSudoku.length; i++) {
+            Celda celdaTemporal = new Celda(); // celda temporal
+            celdaTemporal.setValor(numerosSudoku[i]); // se creo una celta temporal con la cual se utilizara para validar
+
+            // verificas las reglas del sudoku
+            if (validar.validarFila(tablero, celdaTemporal, fila) && validar.validarColumna(tablero, celdaTemporal, columna) && validar.validarSubcuadro(fila, columna, tablero, celdaTemporal)) {
+                tablero.getCelda(fila, columna).setValor(numerosSudoku[i]); // inserta valor si es correcto en el tablero
+
+                // comprueba que el valor de una solucion si no da una solucion retrocede borrando el numero y prueba otro
+                if (generarSudoku(tablero, posicion + 1)) {
                     return true;
-                }
-                else{
+                } else {
                     tablero.getCelda(fila, columna).setValor(0);
                 }
 
@@ -42,32 +70,48 @@ public class Generar {
         }
         return false;
     }
+    /**
+     * Elimina cuatro celdas de cada subcuadro 2x3.
+     *
+     * Deja visibles únicamente dos celdas por subcuadro,
+     * las cuales serán las pistas iniciales del jugador.
+     *
+     * @param tablero Tablero generado completamente.
+     */
+    public void eliminarCeldasPorSubcuadro(Tablero tablero) {
 
-    public void eliminarCeldasSegunNivel(Tablero tablero, Niveles nivel, String dificultad){
+        int filasBloque = 2;
+        int columnasBloque = 3;
 
-        int celdasAEliminar=0;
-        if(dificultad.equalsIgnoreCase("facil")){
-             celdasAEliminar = nivel.nivelFacil();
-        }
-        if(dificultad.equalsIgnoreCase("medio")){
-             celdasAEliminar = nivel.nivelMedio();
+        int totalFilas = 6;
+        int totalColumnas = 6;
 
-        }
-        if(dificultad.equalsIgnoreCase("dificil")){
-             celdasAEliminar = nivel.nivelDificil();
+        // recorre subcuadros
+        // (0,0)
+        //(0,3)
+        //(2,0)
+        //(2,3)
+        //(4,0)
+        //(4,3)
+        for (int inicioFila = 0; inicioFila < totalFilas; inicioFila += filasBloque) {
+            for (int inicioCol = 0; inicioCol < totalColumnas; inicioCol += columnasBloque) {
 
-        }
-        int celdasEliminadas=0;
-        while (celdasEliminadas<celdasAEliminar){
-            int fila = random.nextInt(9);
-            int columna = random.nextInt(9);
+                int eliminadas = 0;
+                //Elimina cuatro celdas
+                while (eliminadas < 4) {
 
-            if(tablero.getCelda(fila,columna).getValor() != 0 ){
-                tablero.getCelda(fila,columna).setValor(0);
-                tablero.getCelda(fila,columna).setEditable(true);
-                celdasEliminadas++;
+                    int fila = inicioFila + random.nextInt(filasBloque);
+                    int columna = inicioCol + random.nextInt(columnasBloque);
+
+                    Celda celda = tablero.getCelda(fila, columna);
+
+                    if (celda.getValor() != 0) {
+                        celda.setValor(0);
+                        celda.setEditable(true);
+                        eliminadas++;
+                    }
+                }
             }
         }
     }
-
 }
